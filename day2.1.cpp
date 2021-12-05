@@ -6,7 +6,7 @@ int main(void){
     
     int a;
     std::string dir;
-    int hor, depth = 0;
+    int hor = 0, depth = 0;
     while (infile >> dir >> a) {
         switch (dir[0]) {
             case 'u':
