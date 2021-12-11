@@ -17,6 +17,7 @@ int increment(int x, int y) {
     } else if (y < 0 || y >= rows) {
         return 0;
     } else if (grid[x][y] <= '9' && grid[x][y]++ == '9') {
+        // 1 toevoegen aan alle octopussen in de buurt
         return increment(x-1, y-1) + increment(x-1, y) + increment(x-1, y+1) + increment(x, y-1) + increment(x, y+1) + increment(x+1, y-1) + increment(x+1, y) + increment(x+1, y+1) + 1;
     } else {
         return 0;
@@ -38,11 +39,13 @@ int main(void){
     int sparks = 0;
     for (int i = 0; true; i++) {
         sparks = 0;
+        // 1 aan alle octopussen toevoegen
         for (int j = 0; j < columns; j++) {
             for (int k = 0; k < rows; k++) {
                 sparks += increment(j, k);
             }
         }
+        // Reset octopussen
         for (int j = 0; j < columns; j++) {
             for (int k = 0; k < rows; k++) {
                 if (grid[j][k] > '9') {
