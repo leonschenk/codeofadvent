@@ -6,50 +6,40 @@
 #include <cmath>
 #include <cstring>
 
-struct node {
-    std::string name;
+struct cave {
+    bool start;
+    bool end;
     bool large;
-    std::vector<node*> connections;
+    std::vector<cave*> connections;
     
-    node& operator+=(const node& other) {
-        name = other.name;
+    cave& operator+=(const cave& other) {
+        start = other.start;
+        end = other.end;
         large = other.large;
-        for (node* con : other.connections) {
+        for (cave* con : other.connections) {
             connections.push_back(con);
         }
         return *this;
     }
 };
 
-struct pathElement {
-    pathElement* previous;
-    node* currentNode;
-    bool visitedSmallCaveTwice;
-    std::vector<pathElement> children;
-};
-
-int explorePathElement(pathElement& pe, node* startNode, node* endNode) {
-    if (pe.currentNode == endNode) {
-        return 1;
+int exploreCave(cave& start, std::vector<cave*>&& visitedCaves = std::vector<cave*>(), bool visitedSmallCaveTwice = false) {
+    int sum = 0;
+    if (!start.large) {
+        visitedCaves.push_back(&start);
     }
-    for (node* child : pe.currentNode->connections) {
-        if (child->large) {
-            pe.children.push_back({&pe, child, pe.visitedSmallCaveTwice});
-        } else {
-            int hasVisited = 0;
-            for (pathElement* prev = pe.previous; prev != nullptr; prev = prev->previous) {
-                if (prev->currentNode == child) {
-                    hasVisited++;
-                }
-            }
-            if (hasVisited == 0 || (hasVisited == 1 && !pe.visitedSmallCaveTwice && child != startNode)) {
-                pe.children.push_back({&pe, child, hasVisited == 1 || pe.visitedSmallCaveTwice});
-            }
+    for (cave* child : start.connections) {
+        if (child->start) {
+        } else if (child->end) {
+            sum += 1;
+        } else if (child->large || std::find(visitedCaves.begin(), visitedCaves.end(), child) == visitedCaves.end()) {
+            sum += exploreCave(*child, static_cast<std::vector<cave*>&&>(visitedCaves), visitedSmallCaveTwice);
+        } else if (!visitedSmallCaveTwice) {
+            sum += exploreCave(*child, static_cast<std::vector<cave*>&&>(visitedCaves), true);
         }
     }
-    int sum = 0;
-    for (pathElement& child : pe.children) {
-        sum += explorePathElement(child, startNode, endNode);
+    if (!start.large) {
+        visitedCaves.pop_back();
     }
     return sum;
 }
@@ -58,26 +48,21 @@ int main(void){
     std::ifstream infile("File16");
     
     std::string line;
-    std::map<std::string, node> nodes;
+    std::map<std::string, cave> nodes;
 
     while(infile >> line) {
         std::string n1 = line.substr(0, line.find('-'));
         std::string n2 = line.substr(line.find('-') + 1);
         
-        nodes[n1] += {n1, bool(std::isupper(n1[0]))};
-        nodes[n2] += {n2, bool(std::isupper(n2[0]))};
-        
-        nodes[n1].connections.push_back(&nodes[n2]);
-        nodes[n2].connections.push_back(&nodes[n1]);
+        nodes[n1] += {n1 == "start", n1 == "end", bool(std::isupper(n1[0])), {&nodes[n2]}};
+        nodes[n2] += {n2 == "start", n2 == "end", bool(std::isupper(n2[0])), {&nodes[n1]}};
     }
     
     for (auto i : nodes) {
         std::cout << i.first << " connecties " << (i.second.large ? "groot" : "klein") << " aantal connecties: " << i.second.connections.size() << std::endl;
     }
 
-    node* startNode = &nodes["start"];
-    pathElement startElement = {nullptr, &nodes["start"], false};
-    int resultaat = explorePathElement(startElement, &nodes["start"], &nodes["end"]);
+    int resultaat = exploreCave(nodes["start"]);
 
-    std::cout << resultaat << std::endl;    
+    std::cout << "Het aantal paden is: " << resultaat << std::endl;
 }
