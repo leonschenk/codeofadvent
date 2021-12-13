@@ -39,14 +39,23 @@ int main(void){
             paper.insert(dot);
         }
     }
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 100; j++) {
-            if (paper.contains({j, i})) {
-                std::cout << '*';
-            } else {
-                std::cout << ' ';
+    std::string result = "";
+    for (int i = 0; i < 8; i++) {
+        std::cout << "Which character is this?: " << std::endl;
+        char a;
+        for (int j = 0; j < 6; j++) {
+            for (int k = (i*5); k < ((i+1)*5); k++) {
+                if (paper.contains({k, j})) {
+                    std::cout << '*';
+                } else {
+                    std::cout << ' ';
+                }
             }
+            std::cout << std::endl;
         }
+        std::cin >> a;
+        result += a;
         std::cout << std::endl;
     }
+    std::cout << "Het resultaat is: " << result << std::endl;
 }
