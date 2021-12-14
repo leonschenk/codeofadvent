@@ -13,7 +13,7 @@ std::map<int, char> indToC;
 const int steps = 40;
 const int options = 10;
 
-long cache[steps+1][options][options][options] = {};
+long cache[2][options][options][options] = {};
 int rules[options][options] = {};
 
 int main(void){
@@ -42,14 +42,16 @@ int main(void){
         rules[cToInd[first]][cToInd[second]] = cToInd[right];
     }
     
-    for (int i = 1; i <= steps; i++) {
+    for (int i = 0; i < steps; i++) {
+        int stepIt = i&0x01;
+        int prevStepIt = stepIt^0x01;
         for (int j = 0; j < options; j++) {
             for (int k = 0; k < options; k++) {
                 int insertedAtThisLevel = rules[j][k];
                 for (int l = 0; l < options; l++) {
-                    cache[i][j][k][l] = cache[i-1][j][insertedAtThisLevel][l] + cache[i-1][insertedAtThisLevel][k][l];
+                    cache[stepIt][j][k][l] = cache[prevStepIt][j][insertedAtThisLevel][l] + cache[prevStepIt][insertedAtThisLevel][k][l];
                 }
-                cache[i][j][k][insertedAtThisLevel]++;
+                cache[stepIt][j][k][insertedAtThisLevel]++;
             }
         }
     }
@@ -62,7 +64,7 @@ int main(void){
         int ind = cToInd[startposition[i]];
         int ind2 = cToInd[startposition[i+1]];
         for (int j = 0; j < options; j++) {
-            res[j] += cache[steps][ind][ind2][j];
+            res[j] += cache[(steps + 1) & 0x01][ind][ind2][j];
         }
     }
 
